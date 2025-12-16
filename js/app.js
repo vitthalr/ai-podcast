@@ -51,14 +51,18 @@ async function generatePodcast() {
     showScreen(elements.screens.loading);
 
     try {
+        // Get selected duration
+        const duration = parseFloat(document.getElementById('durationSelect').value);
+        
         // Check if we have cached content
         const cacheKey = getCacheKey(topic);
+        const mixedAudioCacheKey = cacheKey + `_mixed_${duration}`;
         
         // Check IndexedDB for the full mixed audio first
-        const cachedMixedBlob = await getPodcastFromDB(cacheKey);
+        const cachedMixedBlob = await getPodcastFromDB(mixedAudioCacheKey);
         
         if (cachedMixedBlob) {
-            console.log('Found cached mixed audio for:', topic);
+            console.log('Found cached mixed audio for:', topic, 'duration:', duration);
             
             // We still need the cover art
             activateLoadingStep(elements.loading.step1);
@@ -88,16 +92,11 @@ async function generatePodcast() {
             return; // Exit early since we have everything
         }
 
-        const hasCache = getCacheItem(cacheKey + '_script') && 
-                        getCacheItem(cacheKey + '_image') && 
-                        getCacheItem(cacheKey + '_audio');
-        
-        if (hasCache) {
-            console.log('Found cached components for:', topic);
+        // Check for cached script to log
+        const cachedScript = getCacheItem(cacheKey + `_script_${duration}`);
+        if (cachedScript) {
+            console.log('Found cached script for:', topic);
         }
-
-        // Get selected duration
-        const duration = parseFloat(document.getElementById('durationSelect').value);
 
         // Step 1: Script & Cover Art (Parallel start)
         activateLoadingStep(elements.loading.step1);
@@ -129,13 +128,13 @@ async function generatePodcast() {
             URL.revokeObjectURL(currentAudioUrl);
         }
         
-        const rawAudioUrl = await generateAudio(ssml, topic);
+        const rawAudioUrl = await generateAudio(ssml, topic, duration);
         
         // Mix speech with background music
         const mixedAudioBlob = await mixAudio(rawAudioUrl, MUSIC_CONFIG.DEFAULT_MUSIC_URL, MUSIC_CONFIG);
         
         // Cache the mixed audio
-        await savePodcastToDB(cacheKey, mixedAudioBlob);
+        await savePodcastToDB(mixedAudioCacheKey, mixedAudioBlob);
         
         const mixedAudioUrl = URL.createObjectURL(mixedAudioBlob);
         

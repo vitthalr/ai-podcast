@@ -113,15 +113,8 @@ export async function generateScript(topic, duration = 1) {
     return requestPromise;
 }
 
-export async function generateAudio(ssml, topic) {
-    const cacheKey = getCacheKey(topic) + '_audio';
-    
-    // Check cache first
-    const cachedAudio = getCacheItem(cacheKey);
-    if (cachedAudio) {
-        console.log('Using cached audio for:', topic);
-        return cachedAudio;
-    }
+export async function generateAudio(ssml, topic, duration = 1) {
+    const cacheKey = getCacheKey(topic) + `_audio_${duration}`;
     
     // Deduplicate concurrent requests
     if (pendingRequests.has(cacheKey)) {
