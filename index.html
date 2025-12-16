@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Catchup - AI Podcast Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gradient-to-b from-gray-900 to-black min-h-screen text-white">
+    
+    <!-- Input Screen -->
+    <div id="inputScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8 fade-in">
+                <div class="text-6xl mb-4">🎙️</div>
+                <h1 class="text-5xl font-bold mb-2 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">Catchup</h1>
+                <p class="text-gray-400">Turn any topic into an audio experience</p>
+            </div>
+            
+            <div class="bg-gray-800/50 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-gray-700/50 fade-in">
+                <textarea 
+                    id="topicInput" 
+                    placeholder="What's on your mind? (e.g., The future of AI, History of coffee...)"
+                    class="w-full bg-gray-900/50 text-white rounded-2xl p-4 min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500 border border-gray-700"
+                ></textarea>
+
+                <!-- Starter Prompts -->
+                <div id="starterPrompts" class="mt-4 flex flex-wrap gap-2">
+                    <!-- Prompts will be injected here -->
+                </div>
+                
+                <button 
+                    id="generateBtn"
+                    class="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-4 px-6 rounded-full transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+                >
+                    <span id="btnText">Generate Podcast</span>
+                    <svg id="btnLoader" class="animate-spin h-5 w-5 hidden" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="text-center max-w-md mx-auto">
+            <div class="relative w-32 h-32 mx-auto mb-8">
+                <div class="absolute inset-0 border-4 border-green-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-green-500 rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-4xl">🎙️</div>
+            </div>
+            
+            <div class="space-y-4">
+                <div id="loadingStep1" class="loading-step opacity-50 transition-all duration-500">
+                    <div class="text-xl font-semibold">🧠 Cooking up the script...</div>
+                    <div class="text-gray-400 text-sm mt-1">Crafting engaging dialogue</div>
+                </div>
+                <div id="loadingStep2" class="loading-step opacity-50 transition-all duration-500">
+                    <div class="text-xl font-semibold">🎨 Generating digital poster...</div>
+                    <div class="text-gray-400 text-sm mt-1">Creating stunning visuals</div>
+                </div>
+                <div id="loadingStep3" class="loading-step opacity-50 transition-all duration-500">
+                    <div class="text-xl font-semibold">🎤 Recording voices...</div>
+                    <div class="text-gray-400 text-sm mt-1">Bringing it to life with AI voices</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Screen -->
+    <div id="playerScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md relative">
+            <!-- Close Button -->
+            <button 
+                id="closeBtn"
+                class="absolute -top-4 -right-4 z-10 w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all transform hover:scale-110 shadow-lg border border-gray-700"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-700/50 fade-in">
+                <!-- Album Art -->
+                <div class="relative w-64 h-64 mx-auto mb-8">
+                    <img id="albumArt" class="w-full h-full rounded-full object-cover shadow-2xl border-4 border-gray-800" src="" alt="Podcast Cover" />
+                    <!-- Center point for record look -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-gray-900 rounded-full border border-gray-700"></div>
+                </div>
+
+                <!-- Title -->
+                <div class="text-center mb-8">
+                    <h2 id="podcastTitle" class="text-2xl font-bold mb-1 line-clamp-2 text-white">Your Podcast</h2>
+                    <p id="podcastSubtitle" class="text-sm text-green-400 font-medium tracking-wide uppercase">AI Generated</p>
+                </div>
+
+                <!-- Progress Area -->
+                <div class="mb-8">
+                    <input 
+                        type="range" 
+                        id="progressBar" 
+                        class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500 hover:accent-green-400 transition-all" 
+                        value="0" 
+                        min="0" 
+                        max="100"
+                    >
+                    <div class="flex justify-between text-xs text-gray-400 mt-2 font-mono">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Controls Row -->
+                <div class="flex items-center justify-center gap-10">
+                    <button id="seekBackBtn" class="text-gray-400 hover:text-white transition-colors transform hover:scale-110 p-2" title="-5 seconds">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+                        </svg>
+                    </button>
+
+                    <button 
+                        id="playPauseBtn"
+                        class="w-20 h-20 bg-green-500 hover:bg-green-400 text-black rounded-full flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/20"
+                    >
+                        <svg id="playIcon" class="w-10 h-10 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="pauseIcon" class="w-10 h-10 hidden" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+                        </svg>
+                    </button>
+
+                    <button id="seekFwdBtn" class="text-gray-400 hover:text-white transition-colors transform hover:scale-110 p-2" title="+5 seconds">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Audio Elements -->
+    <audio id="audioPlayer" style="display:none;"></audio>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

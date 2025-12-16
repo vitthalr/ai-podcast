@@ -1,0 +1,11 @@
+{
+  "name": "audiopodcast-api",
+  "version": "1.0.0",
+  "description": "API for AI Podcast Generator",
+  "scripts": {
+    "start": "func start"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
