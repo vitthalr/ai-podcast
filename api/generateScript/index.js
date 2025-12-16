@@ -1,12 +1,18 @@
 const axios = require('axios');
 
 module.exports = async function (context, req) {
-    const { topic } = req.body;
+    const { topic, duration = 1 } = req.body; // duration in minutes, default 1
     
     if (!topic) {
         context.res = { status: 400, body: "Topic is required" };
         return;
     }
+    
+    // Calculate approximate words based on duration (150 words per minute)
+    const targetWords = Math.round(duration * 150);
+    const lengthGuidance = duration <= 1 
+        ? `Keep the main conversation under ${duration} minute (~${targetWords} words total).`
+        : `Keep the main conversation around ${duration} minutes (~${targetWords} words total).`;
 
     const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
     const apiKey = process.env.AZURE_OPENAI_API_KEY;
@@ -43,7 +49,7 @@ IMPORTANT:
 - START with: "Host 1: [warm] Hey everyone, welcome! Today we're diving into [topic]."
 - END with: "Host 1: [warm] Alright, that's it for today. Thanks for tuning in!"
 
-LENGTH: Keep the main conversation under 1 minute (~150 words total).`
+LENGTH: ${lengthGuidance}`
                 },
                 {
                     role: 'user',
@@ -51,7 +57,7 @@ LENGTH: Keep the main conversation under 1 minute (~150 words total).`
                 }
             ],
             temperature: 0.7,
-            max_tokens: 400
+            max_tokens: Math.min(Math.round(targetWords * 2.5), 4000) // Scale tokens with duration
         }, {
             headers: {
                 'Content-Type': 'application/json',

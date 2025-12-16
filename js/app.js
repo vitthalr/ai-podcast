@@ -96,11 +96,14 @@ async function generatePodcast() {
             console.log('Found cached components for:', topic);
         }
 
+        // Get selected duration
+        const duration = parseFloat(document.getElementById('durationSelect').value);
+
         // Step 1: Script & Cover Art (Parallel start)
         activateLoadingStep(elements.loading.step1);
         
         // Start both requests in parallel
-        const scriptPromise = generateScript(topic);
+        const scriptPromise = generateScript(topic, duration);
         const coverArtPromise = generateCoverArt(topic);
         
         // Wait for script first

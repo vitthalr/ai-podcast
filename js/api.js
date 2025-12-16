@@ -73,8 +73,8 @@ export async function generateCoverArt(topic) {
     return requestPromise;
 }
 
-export async function generateScript(topic) {
-    const cacheKey = getCacheKey(topic) + '_script';
+export async function generateScript(topic, duration = 1) {
+    const cacheKey = getCacheKey(topic) + `_script_${duration}`;
     
     // Check cache first
     const cachedScript = getCacheItem(cacheKey);
@@ -94,7 +94,7 @@ export async function generateScript(topic) {
             const res = await fetch('/api/generateScript', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic })
+                body: JSON.stringify({ topic, duration })
             });
 
             if (!res.ok) throw new Error(`Script generation failed: ${res.status}`);
